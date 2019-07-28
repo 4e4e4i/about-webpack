@@ -1,0 +1,23 @@
+{
+  "name": "about-webpack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/4e4e4i/about-webpack.git"
+  },
+  "author": "4e4e4i",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/4e4e4i/about-webpack/issues"
+  },
+  "homepage": "https://github.com/4e4e4i/about-webpack#readme",
+  "devDependencies": {
+    "case-sensitive-paths-webpack-plugin": "^2.2.0",
+    "webpack": "^4.38.0"
+  }
+}

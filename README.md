@@ -167,4 +167,80 @@ module.exports = {
 Можно добавлять дополнительное поле devtool со значением 'eval' для первого типа исходных карт.
 Следующий тип карт - 'source-map'. Создает отдельный файл map с исходными картами. Есть и другие, можно посмотреть в документации.
 
+#### Подключение плагинов
 
+С помощью плагинов можно расширять функционал вебпака. 
+
+Например подефолту в вебпак мы можем импортировать файл, названный с заглавной буквы, с прописной.
+То есть, если мы создали Module.js и импортируем в init.js 
+
+```
+impot 'module.js'
+```
+
+Вебпак без ошибок создаст бандл, и это не есть правильно. Потому что проект могут разрабатывать на разных ОС
+и данная фишка не прокатит. Для таких случаев существует плагин.
+Для этого потребуется подключить npm и установить пакет с данным плагином с зависимостью для разработки.
+
+```
+npm i --save-dev case-sensitive-paths-webpack-plugin
+```
+
+Затем подключить данный пакет в webpack.config.js. И затем в корне выходного объекта, в поле plugins, которое является массивом,
+добавить экземпляр данного плагина через ключевое слово **new** и вызвать его
+
+```
+const path = require('path');
+const CaseSensitivePathsWebpackPlugin = require('case-sensitive-paths-webpack-plugin')
+
+module.exports = {
+    context: path.resolve(__dirname, 'src'),
+
+    entry: './init.js',
+
+    mode: 'none',
+
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, 'dist')
+    },
+
+    plugins: [
+        new CaseSensitivePathsWebpackPlugin()
+    ]
+}
+```
+Теперь вебпак будет вызывать ошибку, если импортируются модули с различными регистрами в названии файлов.
+
+Так же у Вебпака есть свои собственные плагины и для того чтобы ими пользоваться необходимо установить
+вебпак локально. 
+
+```
+npm i --save-dev webpack
+```
+
+Подключить пакет вебпака в webpack.config.js. И теперь можно воспользоваться его плагинами.
+Например подключим плагин для минификации кода
+
+```
+√const path = require('path');
+ const webpack = requier('webpack')
+ 
+ module.exports = {
+     context: path.resolve(__dirname, 'src'),
+ 
+     entry: './init.js',
+ 
+     mode: 'none',
+ 
+     output: {
+         filename: 'bundle.js',
+         path: path.resolve(__dirname, 'dist')
+     },
+ 
+     plugins: [
+         new webpack.optimize.UglifyJsPlagin()
+     ]
+ }
+
+```

@@ -1,9 +1,11 @@
 const path = require('path');
+const CaseSensitivePathsWebpackPlugin = require('case-sensitive-paths-webpack-plugin')
+const webpack = requier('webpack')
 
 module.exports = {
     context: path.resolve(__dirname, 'src'),
 
-    entry: './Home.js',
+    entry: './init.js',
 
     mode: 'none',
 
@@ -12,5 +14,8 @@ module.exports = {
         path: path.resolve(__dirname, 'dist')
     },
 
-    devtool: 'source-map'
+    plugins: [
+        new CaseSensitivePathsWebpackPlugin(),
+        new webpack.optimize.UglifyJsPlagin()
+    ]
 }

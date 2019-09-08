@@ -1,30 +1,26 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
 module.exports = {
 
     context: path.join(__dirname, 'src'),
-    entry: './init.js',
 
     mode: 'none',
+    entry: {
+        index: './index',
+        shop: './shop'
+    },
 
     output: {
         path: path.join(__dirname, 'dist'),
-        filename: 'bundle.js'
+        filename: '[name].js' // шаблонизатор - name будет либо index, либо shop
     },
 
-    // optimization: {
-    //     minimize: true
-    // },
-
     plugins: [
-        new webpack.DefinePlugin({
-            VERSION: JSON.stringify('0.0.2'),
-            PRODUCTION: false,
-            HTML5_SUPPORT: true
-        }),
-        new webpack.ProvidePlugin({
-            $: 'jquery'
+        new HtmlWebpackPlugin({
+            title: 'Test application 01',
+            hash: true // теперь вместо адреса в src еще добавляется hash (номера сборки)
         })
     ]
 };

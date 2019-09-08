@@ -394,3 +394,83 @@ function init() {
 
 Конечно, ProvidePlugin не рекомендуется использовать ко всему, потому что лучше подключать библиотеки непосредственно туда,
 где они необходимы, а вот DefinePlugin очень удобен и позволяет сократить какой-нибудь код. 
+
+#### HTML Webpack Plugin
+
+Плагин, который позволяет сгенерировать HTML файл для наших скриптов. Для этого создаим в проекте два файла
+index.js и shop.js (две точки входа)
+
+index.js
+```javascript
+console.log('index.js')
+```
+
+shop.js
+```javascript
+console.log('shop.js')
+```
+
+webpack.config.js
+```javascript
+const path = require('path');
+
+module.exports = {
+    
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index',
+        shop: './shop'
+    },
+    
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[name].js' // шаблонизатор - name будет либо index, либо shop
+    }
+}
+```
+
+Установим плагин
+
+```
+npm install --save-dev html-webpack-plugin
+```
+
+Плагин будет работать в том случае если локально установлен webpack
+
+и подключим данный файл в конфиге
+
+```javascript
+const HtmlWebpackPlugin = require('htlm-webpack-plugin');
+
+module.exports = {
+    //...
+    plugins: [
+        new HtmlWebpackPlugin()
+    ]
+}
+```
+
+Теперь мы видим, что после сборки проекта, у нас создается html файл с названием index. В котором подключены две точки
+входа (два скрипта в конце файла index.js и shop.js).
+
+У данного плагина есть настройки, которые передаются в виде объекта в конструкторе плагина.
+
+```javascript
+module.exports = {
+    //...
+    plugins: [
+        new HtmlWebpackPlugin({
+            title: 'Test application 01', // title for html
+            hash: true,
+            minify: true // minimize html
+        })
+    ]
+}
+```
+
+hash нужен для того чтобы добавить hash для ссылки на файл. Допустим у вас будет какая-то точка входа для определенной
+библиотеки, которая не будет меняться, потому что это библиотека и соотвественно каждый раз пересобирать ее нам будет
+не интересно и чтобы браузер закешировал библиотеку, для этого вносится номер сборки, то есть если он поменяется, то он будет
+заново пересобирать, а если не поменялся, то он обратится к кешу и возьмет ее оттуда.
+
+

@@ -222,9 +222,9 @@ npm i --save-dev webpack
 Подключить пакет вебпака в webpack.config.js. И теперь можно воспользоваться его плагинами.
 Например подключим плагин для минификации кода
 
-```
-√const path = require('path');
- const webpack = requier('webpack')
+```javascript
+ const path = require('path');
+ const webpack = require('webpack')
  
  module.exports = {
      context: path.resolve(__dirname, 'src'),
@@ -244,3 +244,153 @@ npm i --save-dev webpack
  }
 
 ```
+
+в новой версии Webpack минимазация подключается через поле optimization
+```javascript
+module.exports = {
+    // ...
+    optimization: {
+        minimize: true // This is true by default in production mode.
+    }
+}
+```
+
+Так же можно привести пример библиотеки jquery и добавить ее в наш проект
+
+```
+npm i --save jquery
+```
+
+В init.js добавим код
+```javascript
+import $ from 'jquery';
+
+function StartApplication(someParams) {
+    console.log(someParams);
+    $('body').html(someParams);
+}
+
+StartApplication('Hello World!');
+```
+
+И теперь после использования команды webpack, у нас будет минифицирован даже код библиотеки.
+
+#### Define & Provide Plugins
+
+Для того чтобы исопльзовать данные плагины нам необходимо локально установить в devDependency webpack
+и в конфинг фале в поле plugins добавить новый экземпляр класса webpack.DefinePlugin и в параметрах нужно будет
+передать непосредственно в сам конструктор класса объект:
+
+```javascript
+const path = require('path');
+const webpack = require('webpack');
+
+module.exports = {
+
+    context: path.join(__dirname, 'src'),
+    entry: './init.js',
+
+    mode: 'none',
+
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: 'bundle.js'
+    },
+
+    optimization: {
+        minimize: true
+    },
+
+    plugins: [
+        new webpack.DefinePlugin({
+        
+        })
+    ]
+};
+
+```
+
+Данный плагин позволяет создавать импровизированные глобальные переменные для проекта. По факту они буду локальные,
+т.е. в консоле в devtools мы не сможем их найти, одна по всему проекту они будут глобальными.
+
+Как это будет выглядеть, например мы хотим создать поле VERSION т.е. версию нашего проекта, и например в его значение добавить
+строку '0.0.2', так же добавим флаг PRODUCTION со значением false, и флаг HTML5_SUPPORT со значением true:
+
+```javascript
+module.exports = {
+    //...
+    plugins: [
+        new webpack.DefinePlugin({
+            VERSION: '0.0.2',
+            PRODUCTION: false,
+            HTML5_SUPPORT: true
+        })
+    ]
+}
+```  
+
+Теперь если мы хотим воспользоваться данными переменными в самом коде, то в файле init.js можем написать следующее:
+
+```javascript
+function init() {
+
+    if (!PRODUCTION) {
+        console.log(VERSION);
+    }
+
+    console.log('html5', HTML5_SUPPORT);
+}
+``` 
+
+Теперь после сборки наши переменные будут заменены на значения полей указанных в плагине, но единственная коллизия произошла
+с переменной версии, мы хотели видеть строку, а получили число. Для этого нужно указать webpack явно, что значение данного
+поля - строка. Поэтому в значении поля мы можем обратиться к глобальному объекту JSON и его свойству stringify
+
+```javascript
+new webpack.DefinePlugin({
+    VERSION: JSON.stringify('0.0.2'),
+    PRODUCTION: false,
+    HTML5_SUPPORT: true
+})
+```
+Данная функция позволяет переводить в JSON стиль и webpack понимает, что это именно строка.
+
+Так же давайте создаим еще один файл, например a.js и напишем внутри него условие :
+
+```javascript
+if (!PRODUCTION) {
+    alert(HTML5_SUPPORT);
+}
+```
+
+И импортируем данный файл в init.js
+
+```javascript
+import './a';
+```
+
+Если бы в условие пришло булин false, то вебпак даже бы не стал заходить в него и компилировать внутренний код.
+
+Следующий плагин, который мы рассмотрим называется ProvidePlugin, он так же в конструкторе принимает в себя объект,
+и в нем мы можем указать ту или иную библиотеку, которая установлена в папке node_modules, например если мы установили jquery:
+
+```javascript
+module.exports = {
+    plugins: [
+        new webpack.ProvidePlugin({
+            $: 'jquery'
+        })
+    ]
+}
+```
+
+Так мы можем в файле init.js просто обратиться к функционалу jquery не подключая ее в самом файле:
+
+```javascript
+function init() {
+    $('body').html(VERSION);
+}
+```
+
+Конечно, ProvidePlugin не рекомендуется использовать ко всему, потому что лучше подключать библиотеки непосредственно туда,
+где они необходимы, а вот DefinePlugin очень удобен и позволяет сократить какой-нибудь код. 

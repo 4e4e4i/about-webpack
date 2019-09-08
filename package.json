@@ -19,5 +19,8 @@
   "devDependencies": {
     "case-sensitive-paths-webpack-plugin": "^2.2.0",
     "webpack": "^4.38.0"
+  },
+  "dependencies": {
+    "jquery": "^3.4.1"
   }
 }

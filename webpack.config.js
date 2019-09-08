@@ -1,21 +1,30 @@
 const path = require('path');
-const CaseSensitivePathsWebpackPlugin = require('case-sensitive-paths-webpack-plugin')
-const webpack = requier('webpack')
+const webpack = require('webpack');
 
 module.exports = {
-    context: path.resolve(__dirname, 'src'),
 
+    context: path.join(__dirname, 'src'),
     entry: './init.js',
 
     mode: 'none',
 
     output: {
-        filename: 'bundle.js',
-        path: path.resolve(__dirname, 'dist')
+        path: path.join(__dirname, 'dist'),
+        filename: 'bundle.js'
     },
 
+    // optimization: {
+    //     minimize: true
+    // },
+
     plugins: [
-        new CaseSensitivePathsWebpackPlugin(),
-        new webpack.optimize.UglifyJsPlagin()
+        new webpack.DefinePlugin({
+            VERSION: JSON.stringify('0.0.2'),
+            PRODUCTION: false,
+            HTML5_SUPPORT: true
+        }),
+        new webpack.ProvidePlugin({
+            $: 'jquery'
+        })
     ]
-}
+};

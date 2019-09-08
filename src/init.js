@@ -1,5 +1,3 @@
-// import './module'
-
-const ApplicationFunctionStart = () => {
-
+function init() {
+    $('body').html(VERSION);
 }

@@ -462,7 +462,8 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: 'Test application 01', // title for html
             hash: true,
-            minify: true // minimize html
+            minify: false, // minimize html, можно посмотреть все опции на сайте пакета
+            template: './template.html' // шаблон для body внутри html
         })
     ]
 }
@@ -473,4 +474,118 @@ hash нужен для того чтобы добавить hash для ссыл
 не интересно и чтобы браузер закешировал библиотеку, для этого вносится номер сборки, то есть если он поменяется, то он будет
 заново пересобирать, а если не поменялся, то он обратится к кешу и возьмет ее оттуда.
 
+#### Commons Chunks Plugins
 
+В структуре проекта у нас будет 3 файла index.js, profile.js и shop.js
+
+index.js
+```javascript
+console.log('index.js')
+```
+
+shop.js
+```javascript
+console.log('shop.js')
+```
+
+profile.js
+```javascript
+console.log('profile.js')
+```
+
+webpack.config.js
+```javascript
+const path = require('path');
+
+module.exports = {
+    
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index',
+        shop: './shop',
+        profile: './profile'
+    },
+    
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[name].js' // шаблонизатор - name будет либо index, либо shop
+    }
+}
+```
+
+Создадим еще файлы для нашего проекта, в папке common: app.js и action.js. В каждом из этих файлов я напишу
+функцию с консоль логом.
+
+action.js
+```javascript
+export default function action() {
+  console.log('Action!')
+}
+```
+
+app.js
+```javascript
+export default function app() {
+  console.log('App!')
+}
+```
+
+Данные функции будут использоваться на всех страницах, для этого подключим их и вызовем функции в каждом файле.
+
+Давайте теперь запустим webpack и видим что в каждый файл добавляются наши подключенные модули. У нас получилось, что в каждый файл
+подключаются 3 скрипта, в которых данные куски кода одинаковые. И если бы это была какая-то целая библиотека, то это
+сказалось бы на размере нашего приложения. Для этого существует библиотека, которая будет выносить в отдельный файл куски
+повторяющегося кода. 
+
+Зайдем в конфиг, импотируем туда webpack и подключим плагин,
+
+```javascript
+const path = require('path');
+const webpack = require('webpack');
+
+module.exports = {
+    
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index',
+        shop: './shop',
+        profile: './profile'
+    },
+    
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[name].js' // шаблонизатор - name будет либо index, либо shop
+    },
+    
+    plugins: [
+        new webpack.optimize.CommonsChinkPlugin({
+            name: ['common'], // название того файла, который будет содержать в себе повторяющийся код
+            minChunks: 2 // если как минимум 2 повторения, то код выносится в этот файл
+        })
+    ]
+}
+```
+
+в webpack 4 commonschinkplugin deprecated 
+
+```javascript
+module.exports = {
+    //..
+    optimization: {
+            splitChunks: {
+                cacheGroups: {
+                    vendors: {
+                        name: 'common',
+                        chunks: 'all',
+                        minChunks: 2,
+                        reuseExistingChunk: true,
+                        priority: 1,
+                        enforce: true
+                    }
+                },
+            }
+    }
+}
+```
+
+Библиотеки логично выносить в отдельный файл, например vendor

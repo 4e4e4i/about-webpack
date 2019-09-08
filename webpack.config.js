@@ -1,26 +1,33 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
 module.exports = {
 
     context: path.join(__dirname, 'src'),
-
-    mode: 'none',
     entry: {
         index: './index',
-        shop: './shop'
+        shop: './shop',
+        profile: './profile'
     },
+    mode: "none",
 
     output: {
         path: path.join(__dirname, 'dist'),
         filename: '[name].js' // шаблонизатор - name будет либо index, либо shop
     },
 
-    plugins: [
-        new HtmlWebpackPlugin({
-            title: 'Test application 01',
-            hash: true // теперь вместо адреса в src еще добавляется hash (номера сборки)
-        })
-    ]
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                vendors: {
+                    name: 'common',
+                    chunks: 'all',
+                    minChunks: 2,
+                    reuseExistingChunk: true,
+                    priority: 1,
+                    enforce: true
+                }
+            },
+        }
+    }
 };

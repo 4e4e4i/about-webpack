@@ -588,4 +588,121 @@ module.exports = {
 }
 ```
 
-Библиотеки логично выносить в отдельный файл, например vendor
+Библиотеки логично выносить в отдельный файл, например vendor.
+
+#### Webpack Loaders
+
+Сам по себе сборщик Webpack работает только с js файлами нативно. Но в проекте у нас могут встречаться и картинки, стили,
+может быть препроцессоры, другие языки (TS or CoffeeScript).
+
+Loaders позволяют трансформировать ту или иную сущность в JS, т.е. если мы пропишем CSS Loader, то он преобразует css в js
+и вебпак сможет его разбирать.
+
+Рассмотрим пример в TypeScript
+
+В проекте у нас будет в папке src: index.ts, webpack.config.js
+
+webpack.config.js 
+```javascript
+const path = require('path');
+
+module.exports = {
+    
+    context: path.join(__dirname, 'src'),
+    entry: './index',
+    
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: 'bundle.js'
+    }
+}
+```
+
+index.ts
+```typescript
+interface Person {
+    name: string;
+    age: number;
+}
+
+
+class User implements Person {
+    age: number;
+    name: string;
+
+    constructor() {
+        this.name = 'Petya';
+        this.age = 40;
+    }
+    
+    private logInfo() {
+        console.log(this.name + ' ' + this.age);
+    }
+}
+```
+
+Теперь нам нужно сделать так, чтобы ts компилировался с помощью webpack в js.
+
+Так как мы прописали ./index нужно прописать extensions, которые поддреживаются по-умолчанию, для этого есть поле resolve
+
+```javascript
+module.exports = {
+    //...
+    resolve: {
+        extensions: ['.ts', '.js']
+    }
+}
+```
+
+Чтобы не было необходимости прописывать расширения файлов при импортах.
+
+Теперь нужно добавить loaders, но loaders - сторонние библиотеки, для этого нужно установить их:
+
+```
+npm i --save-dev awesome-typescript-loader typescript
+```
+
+Для того чтобы завести определенный loader на нужно создать в верхнем уровне конфигуратора вебпака поле, которое называется module
+
+Это объект у которого есть поле rules, которое тоже является массивом, дальше в качестве одного параметра и
+элемента массива мы указываем нужный нам лоудер. Лоадер содержит в себе два обязательных поля: test, loader
+
+В поле test нам нужно указать вебпаку какие файлы подлежат компиляции, т.е. сюда мы должны передать регулярное выражение
+которое будет говорить вебапку о расширение которое подлежит обрабатывать определенным лоадером.
+
+В нашем случае мы будем писать /\.ts$/. Теперь вебпак поймет, что все файлы с данным расширением нужно обработать
+
+В поле loader мы пишем название самого лоадера.
+
+```javascript
+module.exports = {
+    //...
+    module: {
+        rules: [
+            {
+                test: /\.ts$/,
+                loader: 'awesome-typescript-loader'
+            }
+        ]
+    }
+}
+```
+
+Не забудем создать tsconfig.json для того чтобы typescript  понимал что ему нужно делать:
+
+tsconfig.json
+```json
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
+```
+
+Теперь попробуем скомпилировать что у нас получилось.
+

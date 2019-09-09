@@ -600,7 +600,7 @@ Loaders позволяют трансформировать ту или иную
 
 Рассмотрим пример в TypeScript
 
-В проекте у нас будет в папке src: index.ts, webpack.config.js
+В проекте у нас будет в папке src: index.js, webpack.config.js
 
 webpack.config.js 
 ```javascript
@@ -618,7 +618,7 @@ module.exports = {
 }
 ```
 
-index.ts
+index.js
 ```typescript
 interface Person {
     name: string;
@@ -706,3 +706,137 @@ tsconfig.json
 
 Теперь попробуем скомпилировать что у нас получилось.
 
+#### Webpack. CSS Loaders. ExtractTextPlugin
+
+Здесь мы поговорим, как с помощью webpack можно работать с css.
+
+В проекте как всегда webpack.config.js и в src 3 файла: body.css, index.js, styles.css
+
+webpack.config.js
+```javascript
+const path = require('path');
+
+module.exports = {
+
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index',
+        styles: './styles.css'
+    },
+
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[name].js'
+    },
+
+    mode: 'none',
+}
+```
+
+index.js
+```javascript
+console.log('index.js')
+```
+
+
+style.css
+```css
+@import "body.css";
+
+html {
+    padding: 0;
+}
+
+```
+
+body.css
+```css
+body {
+    background: red;
+}
+```
+
+Теперь нам нужно прописать определенные лоадеры в module
+
+```javascript
+module.exports = {
+    //...
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader']
+            }
+        ]
+    }
+}
+```
+
+И установить данные библиотеки для css, указанные в use.
+
+```
+npm i --save-dev style-loader css-loader
+```
+
+И теперь для того чтобы webpack преобразовал наши style.js в css файлы необходимо подключить дополнительный плагин
+
+```
+npm i --save-dev extract-text-webpack-plugin
+```
+
+подключаем данный плагин в конфиге
+
+```javascript
+const ExtrackTextPlugin = require('extract-text-webpack-plugin');
+
+module.exports = {
+    //...
+    plugins: [
+        new ExtrackTextPlugin('[name].css') // в случаее если много точек входа [name]
+    ]
+}
+```
+
+Так же нужно преобразовать сам лоадер
+
+```javascript
+
+module.exports = {
+    //...
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: ExtractTextPlugin.extract({
+                    fallback: 'style-loader',
+                    use: 'css-loader'
+                })
+            }
+        ]
+    }
+}
+```
+
+для вебпак 3+ вместо ExtractTextPlugin - MiniCssExtractPlugin
+
+```javascript
+module.exports = {
+    module: {
+            rules: [
+                {
+                    test: /\.(sa|sc|c)ss$/,
+                    use: [
+                        MiniCssExtractPlugin.loader,
+                        'css-loader'
+                    ]
+                }
+            ]
+    },
+    
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: '[name].css'
+        }) // в случаее если много точек входа [name]
+    ]
+}
+```

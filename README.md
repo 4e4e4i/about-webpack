@@ -1177,3 +1177,143 @@ document.body.appendChild(img);
 ```
 
 Если добавить после [ext] добавить шаблон ?[hash], чтобы файл после сборки не менялся и браузер мог захэшировать тот или иной элемент
+
+#### Webpack Dev Server
+
+Модуль позволяет запускать сервер и смотреть за изменением исходного кода благодаря webpack.
+
+Структура: src -> index.js
+
+index.js
+```javascript
+console.log(1 + 3);
+```
+
+webpack.config.js
+```javascript
+const path = require('path');
+const HtmlPlugin = require('html-webpack-plugin');
+
+module.exports = {
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index'
+    },
+    mode: 'none',
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: 'bundle.js'
+    },
+    
+    module: {
+        rules: [
+            {}
+        ]
+    },
+    
+    plugins: [
+        new HtmlPlugin({
+            title: 'Webpack dev server'
+        })
+    ]
+}
+```
+
+Установим плагин html-webpack-plugin который позволяет генерировать html
+
+```
+npm i --save-dev html-webpack-plugin
+```
+
+Установка webpack-dev-server
+
+```
+npm i --save-dev webpack-dev-server
+```
+
+Так же необходимо его установить глобально
+
+```
+npm i -g webpack-dev-server
+```
+
+Теперь когда напишем команду
+
+```
+webpack-dev-server
+```
+
+То проект запустится на localhost:8080
+И любые изменения будут регистрироваться вебпаком и из-за того что мы вызываем webpack-dev-server, он не создает физические
+копии файлов на диске, а все делает в оперативной памяти и тем самым ускоряет процесс пересобирания бандла.
+
+
+#### Hot Module Replacement
+
+Данный плагин позволяет реализовывать горячую перезагрузку страницы, обновление данных без перезагрузки страницы.
+
+webpack.config.js
+```javascript
+const path = require('path');
+const HtmlPlugin = require('html-webpack-plugin');
+
+module.exports = {
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index'
+    },
+    mode: 'none',
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: 'bundle.js'
+    },
+
+    plugins: [
+        new HtmlPlugin({
+            title: 'Webpack dev server'
+        })
+    ]
+}
+```
+
+index.js
+```javascript
+import './style.css'
+```
+
+Установим лоадеры для стилей
+```
+npm i --save-dev style-loader css-loader
+```
+
+настроим webpack.config.js
+
+```javascript
+const webpack = require('webpack');
+module.exports = {
+    //...
+    module: {
+            rules: [
+                {
+                    test: /\.css/,
+                    use: ['style-loader', 'css-loader']
+                }
+            ]
+    },
+
+    plugins: [
+        new HtmlPlugin({
+            title: 'Webpack dev server'
+        }),
+        new webpack.HotModuleReplacementPlugin()
+    ],
+
+    devServer: {
+        hot: true
+    }
+}
+```
+
+И запустим webpack-dev-server;
+
+Теперь при изменениях в стилях и верстке, страница не будет перезагружатся, а стили будут применяться.

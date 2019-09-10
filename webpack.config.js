@@ -1,4 +1,6 @@
 const path = require('path');
+const webpack = require('webpack');
+const HtmlPlugin = require('html-webpack-plugin');
 
 module.exports = {
     context: path.join(__dirname, 'src'),
@@ -14,12 +16,20 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.png$/,
-                loader: 'file-loader',
-                options: {
-                    name: '[path][name].[ext]'
-                }
+                test: /\.css/,
+                use: ['style-loader', 'css-loader']
             }
         ]
+    },
+
+    plugins: [
+        new HtmlPlugin({
+            title: 'Webpack dev server'
+        }),
+        new webpack.HotModuleReplacementPlugin()
+    ],
+
+    devServer: {
+        hot: true
     }
 }

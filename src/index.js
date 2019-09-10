@@ -1,5 +1,5 @@
-alert(1);
-console.warn('debug');
-console.log('more debug');
+import logo from './img/boots.png'
 
-var a = 1;
+let img = document.createElement('img');
+img.setAttribute('src', logo);
+document.body.appendChild(img);

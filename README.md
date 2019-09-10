@@ -1105,3 +1105,75 @@ module.exports = {
     }
 }
 ```
+
+#### File Loader
+
+Структура src - index.js, src/img - webpack.png
+
+index.js
+```javascript
+import logo from './img/webpack.png';
+console.log(logo);
+```
+
+webpack.config.js
+```javascript
+const path = require('path');
+
+module.exports = {
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index'
+    },
+    mode: 'none',
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[name].js'
+    },
+    
+    module: {
+        rules: [
+            {}
+        ]
+    }
+}
+```
+
+установка file loader
+
+```
+npm i --save-dev file-loader
+```
+
+настройка в webpack.config.js
+```javascript
+module.exports = {
+    //...
+    module: {
+            rules: [
+                {
+                    test: /\.png$/,
+                    loader: 'file-loader',
+                    options: {
+                        name: '[path][name].[ext]'
+                    }
+                }
+            ]
+    }
+}
+```
+
+В options name - когда будем подгружать какую-либо картинку вебап допишет к ней путь path, имя и через точку расширение.
+
+Например чтобы вставить картинку на страницу изменим файл index.js
+
+index.js
+```javascript
+import logo from './img/boots.png'
+
+let img = document.createElement('img');
+img.setAttribute('src', logo);
+document.body.appendChild(img);
+```
+
+Если добавить после [ext] добавить шаблон ?[hash], чтобы файл после сборки не менялся и браузер мог захэшировать тот или иной элемент

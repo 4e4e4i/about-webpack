@@ -840,3 +840,92 @@ module.exports = {
     ]
 }
 ```
+
+#### Webpack. LESS loader
+
+Структура проекта webpack.config.js, src :  idnex.js, body.less, styles.less
+
+webpack.config.js
+```javascript
+const path = require('path');
+
+module.exports = {
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index'
+    },
+    mode: 'none',
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[name].js'
+    }
+}
+```
+
+index.js
+```javascript
+import './styles.less';
+
+console.log('index.js');
+```
+
+body.less
+```less
+body {
+    background-color: red;
+
+    &:hover {
+      background-color: blue;
+    }
+}
+```
+
+styles.less
+```less
+@import "body";
+
+@null: 0;
+
+.clear() {
+padding: @null;
+margin: @null;
+}
+
+html {
+.clear;
+}
+```
+
+Добавим необходимые библиотеки:
+
+```
+npm i --save-dev webpack style-loader css-loader less less-loader mini-css-extract-plugin
+```
+
+И в самом вебпак устанавливаем правила
+
+```javascript
+module.exports = {
+    module: {
+            rules: [
+                {
+                    test: /\.less$/,
+                    use: [
+                        MiniCssExtractPlugin.loader,
+                        'css-loader',
+                        'less-loader'
+                    ]
+                }
+            ]
+    },
+
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: 'styles.css',
+            allChunks: true
+        }) // в случаее если много точек входа [name]
+    ]
+}
+```
+
+

@@ -928,4 +928,180 @@ module.exports = {
 }
 ```
 
+#### Webpack. Export и Expose Loaders
 
+Первый плагин позволяет делать экспортируемые вещи экспоритруемыми и второй позволяет выносить библиотеки в глобальную область
+видимости
+
+Начнем с Expose Loader...
+
+Проект src: index.js
+
+webpack.config.js
+```javascript
+const path = require('path');
+
+module.exports = {
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index'
+    },
+    mode: 'none',
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[name].js'
+    }
+}
+```
+
+Например в index.js мы захотим вызвать библиотеку jquery, но не подключая ее. (например для устаревшего проекта, который
+смотрит на глобальные переменные и мы не хотим менять его код)
+
+index.js
+```javascript
+console.log($);
+```
+
+Подключаем jquery
+```
+npm i jquery
+```
+
+Далее сам лоадер
+
+```
+npm i --save-dev expose-loader
+```
+
+Затем в webpack.config.js указываем в поле entry новую точку входа vendor - для библиотек
+
+Далее для обычных лоадеров нужно использовать поле module => rules и первым полем объектом у нас идет
+поле test, которое уже не является регулярным выражением, а является результатом функции require и его метода resolve,
+туда мы передаем просто название библиотеки. В поле лоадер мы указываем, чтобы мы используем 'expose-loader?$' ?$ какую переменную
+будем использовать глобально.
+```javascript
+module.exports = {
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index',
+        vendor: ['jquery']
+    },
+    mode: 'none',
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[name].js'
+    },
+    
+    module: {
+        rules: [
+            {
+                test: require.resolve('jquery'),
+                loader: 'expose-loader?$'
+            }
+        ]
+    }
+}
+```
+
+Теперь $ в глобальной области видимости.
+
+Теперь используем лоадер export
+
+```
+npm i --save-dev exports-loader  
+```
+
+Создадим файл в src - no-export.js и попробуем сделать импорт из файла, у которого нет никакого эспорта.
+
+no-export.js
+```javascript
+const hiddenConst = 100;
+```
+
+index.js
+```javascript
+import * as noExport from './no-export';
+
+console.log(noExport);
+```
+
+И пропишем новое свойство для поля rules в webpack.config.js. в поле test, которое является регулярным выражением,
+но здесь мы укажем только название файла, который нам нужно обработать, вторым свойством указываем loader: 'exports-loader?hiddenConst'
+
+```javascript
+module.exports = {
+    //...
+    module: {
+        rules: [
+            {
+                test: /no-export.js/,
+                loader: 'exports-loader?hiddenConst'
+            }
+        ]
+    }
+}
+```
+
+#### Strip Loader
+
+Лоадер, который полезен для работы с JS. 
+
+Проект src: index.js
+
+index.js
+```javascript
+alert(1);
+console.warn('debug');
+console.log('more debug');
+
+var a = 1;
+var b = 2;
+```
+
+webpack.config.js
+```javascript
+const path = require('path');
+
+module.exports = {
+    context: path.join(__dirname, 'src'),
+    entry: {
+        index: './index'
+    },
+    mode: 'none',
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[name].js'
+    },
+    
+    module: {
+        rules: [
+            {}
+        ]
+    }
+}
+```
+
+установка лоадера
+
+```
+npm i --save-dev strip-loader
+```
+
+Теперь перейдем к объекту из массива rules = > rest: /\.js$/, loader: 'strip-loader'...
+
+```javascript
+module.exports = {
+    //...
+    module: {
+        rules: [
+            {
+                test: /\.js$/,
+                loader: 'strip-loader',
+                options: {
+                    strip: ['console.*']
+                }
+            }
+        ]
+    }
+}
+```

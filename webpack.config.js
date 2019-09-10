@@ -1,5 +1,4 @@
 const path = require('path');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     context: path.join(__dirname, 'src'),
@@ -15,20 +14,12 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.less$/,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
-                    'less-loader'
-                ]
+                test: /\.js$/,
+                loader: 'strip-loader',
+                options: {
+                    strip: ['console.*']
+                }
             }
         ]
-    },
-
-    plugins: [
-        new MiniCssExtractPlugin({
-            filename: 'styles.css',
-            allChunks: true
-        }) // в случаее если много точек входа [name]
-    ]
+    }
 }

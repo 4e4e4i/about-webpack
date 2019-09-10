@@ -1,3 +1,5 @@
-import './style.less'
+alert(1);
+console.warn('debug');
+console.log('more debug');
 
-console.log('index.js');
+var a = 1;
